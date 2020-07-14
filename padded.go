@@ -61,13 +61,14 @@ func (s Slice) Pad() int {
 func (s Slice) Prepend(elems ...byte) Slice {
 	pad := len(elems)
 	if pad%wordSize != 0 || pad > s.Pad() {
-		return append(make([]byte, wordSize), append(elems, s...)...)[wordSize:]
+		l := wordSize + len(elems) + len(s)
+		return append(append(make([]byte, wordSize, l), elems...), s...)[wordSize:]
 	}
 
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 	hdr.Data -= uintptr(pad)
-	hdr.Len += pad
 	hdr.Cap += pad
+	hdr.Len += pad
 
 	copy(s, elems)
 	return s
